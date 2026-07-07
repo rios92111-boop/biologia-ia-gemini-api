@@ -6,6 +6,7 @@ import { GoogleGenAI } from "@google/genai";
 dotenv.config();
 
 const app = express();
+
 const allowedOrigin = process.env.FRONTEND_URL || "*";
 
 app.use(cors({
@@ -50,9 +51,6 @@ Forma de responder:
 2. Explica su función o importancia.
 3. Da un ejemplo científico sencillo, sin metáforas infantiles.
 4. Cierra con una idea breve de refuerzo.
-
-Ejemplo de estilo correcto:
-El ADN es una molécula que almacena la información genética de los seres vivos. Esta información participa en la producción de proteínas, el funcionamiento celular y la transmisión de características hereditarias.
 `;
 }
 
@@ -64,6 +62,19 @@ async function generarTextoGemini(prompt) {
 
   return response.text || "No se pudo generar una respuesta.";
 }
+
+app.get("/", (req, res) => {
+  res.json({
+    ok: true,
+    mensaje: "API Biología IA con Gemini activa",
+    rutas: [
+      "/api/health",
+      "/api/ia/chat",
+      "/api/ia/generar-actividad",
+      "/api/ia/generar-cuestionario"
+    ]
+  });
+});
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -86,7 +97,7 @@ app.post("/api/ia/chat", async (req, res) => {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
         ok: false,
-        error: "Falta configurar GEMINI_API_KEY en el backend."
+        error: "Falta configurar GEMINI_API_KEY en Render."
       });
     }
 
@@ -103,16 +114,17 @@ ${mensaje}`;
     });
   } catch (error) {
     console.error("Error en /api/ia/chat:", error);
+
     res.status(500).json({
       ok: false,
-      error: "No se pudo conectar con Gemini. Revisa GEMINI_API_KEY, cuota o modelo."
+      error: "No se pudo conectar con Gemini. Revisa la API key, el modelo o la cuota disponible."
     });
   }
 });
 
 app.post("/api/ia/generar-actividad", async (req, res) => {
   try {
-    const { tema = "Biología", grado = "3ro BGU" } = req.body;
+    const { tema = "Biología", grado = "3ro de bachillerato" } = req.body;
 
     const prompt = `
 ${buildSystemPrompt({ rol: "docente", tema, curso: grado })}
@@ -139,6 +151,7 @@ Devuelve:
     });
   } catch (error) {
     console.error("Error en /api/ia/generar-actividad:", error);
+
     res.status(500).json({
       ok: false,
       error: "No se pudo generar la actividad."
@@ -151,7 +164,7 @@ app.post("/api/ia/generar-cuestionario", async (req, res) => {
     const { tema = "Biología", cantidad = 5 } = req.body;
 
     const prompt = `
-${buildSystemPrompt({ rol: "docente", tema, curso: "3ro BGU" })}
+${buildSystemPrompt({ rol: "docente", tema, curso: "3ro de bachillerato" })}
 
 Crea un cuestionario de Biología.
 Tema: ${tema}
@@ -175,6 +188,7 @@ Formato:
     });
   } catch (error) {
     console.error("Error en /api/ia/generar-cuestionario:", error);
+
     res.status(500).json({
       ok: false,
       error: "No se pudo generar el cuestionario."
