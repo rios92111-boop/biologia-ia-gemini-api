@@ -168,6 +168,22 @@ Requisitos visuales:
 `.trim();
 }
 
+
+app.get("/", (req, res) => {
+  res.json({
+    ok: true,
+    mensaje: "API Biología IA con Gemini activa",
+    rutas: [
+      "/api/health",
+      "/api/salud",
+      "/api/ia/chat",
+      "/api/ia/crear-imagen",
+      "/api/ia/generar-actividad",
+      "/api/ia/generar-cuestionario"
+    ]
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.json({
     ok: true,
